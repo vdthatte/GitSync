@@ -1,7 +1,21 @@
-import sublime
+
 import sublime_plugin
 import json
+import sys
+import os
 
+sys.path.append(os.path.join(os.path.dirname(__file__), "github"))
+
+from . import github
+from github import Github
+
+g = Github("c514d06de71b221a8ebb88916675b2e13a059600")
+
+repo = g.get_user().get_repo('GitSync-TestRepo')
+
+content = 'c2FzZGFzZADDDDDdasdas==\n'
+# https://api.github.com/repos/vdthatte/GitSync-TestRepo/git/trees/{latest commit sha}
+# view.run_command('commit')
 
 #Keys for Commands
 #control+shift+s => Commit
@@ -33,7 +47,17 @@ def addKeyBindings():
 
 class CommitCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		self.view.insert(edit, 0, "Commited Work\n")
+		#self.view.insert(edit, 0, "Commited Work\n")
+		commit = repo.get_commits()[0]
+		tree = repo.get_git_tree(commit.sha)
+
+		for element in tree.tree:
+			if(element.path == 'hello.txt'):
+				print(repo.update_file('/new.txt', "update", content, element.sha))
+
+
+
+
 class BranchCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		self.view.insert(edit, 0, "Created a New Branch\n")
@@ -46,7 +70,8 @@ class InfoCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		self.view.insert(edit, 0, "Opening GUI.....\n")
 
-
 def main():
 	
 	addKeyBindings()
+
+
