@@ -5,6 +5,7 @@ import sys
 import os
 import urllib
 import base64
+import datetime
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "github"))
 
@@ -44,6 +45,7 @@ def addKeyBindings():
 	fh.close()
 
 
+
 class CommitCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		#self.view.insert(edit, 0, "Commited Work\n")
@@ -55,23 +57,39 @@ class CommitCommand(sublime_plugin.TextCommand):
 		tree = repo.get_git_tree(commit.sha)
 		filename = os.path.basename(path)
 		content = self.view.substr(sublime.Region(0, self.view.size()))
-
-		#print(base64.b64decode(repo.get_file_contents('/123.txt').content))
+		print(datetime.date.year)
+		commit_message = "update: "
+		print(base64.b64decode(repo.get_file_contents(filename).content))
 		for element in tree.tree:
 			if(element.path == filename):
-				print(repo.update_file('/' + filename, "update", content, element.sha))
+				print(repo.update_file('/' + filename, commit_message, content, element.sha))
 
 class BranchCommand(sublime_plugin.TextCommand):
+	def selectBranch(self):
+		print("displaying  branches")
+
 	def run(self, edit):
-		self.view.insert(edit, 0, "Created a New Branch\n")
+		#self.view.insert(edit, 0, "Created a New Branch\n")
+		path = urllib.parse.unquote(self.view.file_name())
+		dirPath = os.path.dirname(path)
+		repoName = os.path.basename(dirPath)
+		repo = g.get_user().get_repo(repoName)
+		branches = repo.get_branches()
+		branch_names = ["Create New Branch"]
+		for branch in branches:
+			branch_names.append(branch.name)
+		self.view.window().show_quick_panel(branch_names,self.selectBranch(), 0, 0, 0)
 
 class MergeCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		self.view.insert(edit, 0, "Merged the current branch with Master branch\n")
+		print("merge!")
 
 class InfoCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		self.view.insert(edit, 0, "Opening GUI.....\n")
+		self.view.show_popup("Hey, what's up?", max_width=500)
+		#self.view.window().show_quick_panel(["Master","New Branch"],"on_done",0,0,0)
+		#self.view.window().show_input_panel("caption", "initial_text", "on_done", "on_change", "on_cancel")
+		#self.view.insert(edit, 0, "Opening GUI.....\n")
 
 def main():
 	
