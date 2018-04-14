@@ -23,6 +23,8 @@ g = Github("c514d06de71b221a8ebb88916675b2e13a059600")
 #control+shift+m => Merge Branch
 #control+shift+u => Open UI
 
+branch_names = ["Create New Branch"]
+
 def addKeyBindings():
 	keys = ['{ "keys": ["control+shift+s"], "command": "commit" },', \
 		'{ "keys": ["control+shift+b"], "command": "branch" },', \
@@ -65,8 +67,13 @@ class CommitCommand(sublime_plugin.TextCommand):
 				print(repo.update_file('/' + filename, commit_message, content, element.sha))
 
 class BranchCommand(sublime_plugin.TextCommand):
-	def selectBranch(self):
-		print("displaying  branches")
+	
+	def selectBranch(self, val):
+		if(val == 0):
+			print("create new branch")
+		else:
+			print(branch_names[val])
+
 
 	def run(self, edit):
 		#self.view.insert(edit, 0, "Created a New Branch\n")
@@ -75,14 +82,25 @@ class BranchCommand(sublime_plugin.TextCommand):
 		repoName = os.path.basename(dirPath)
 		repo = g.get_user().get_repo(repoName)
 		branches = repo.get_branches()
-		branch_names = ["Create New Branch"]
+
+		print(repo.branches_url)
+
 		for branch in branches:
 			branch_names.append(branch.name)
-		self.view.window().show_quick_panel(branch_names,self.selectBranch(), 0, 0, 0)
+		self.view.window().show_quick_panel(branch_names,self.selectBranch, 0, 0, 0)
 
 class MergeCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		print("merge!")
+		path = urllib.parse.unquote(self.view.file_name())
+		dirPath = os.path.dirname(path)
+		repoName = os.path.basename(dirPath)
+		repo = g.get_user().get_repo(repoName)
+		base = repo.master_branch
+		head = repo.default_branch
+		print(head)
+		print(base)
+		print(repo.merge(base, head))
+
 
 class InfoCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
