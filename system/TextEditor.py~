@@ -135,7 +135,7 @@ def setup():
 	usr, password = ['usr', 'pss'] #Change login info here!!!
 	git = GitApi.GitApi(usr, password)
 
-	#autoSave(t)
+	autoSave(t)
 
 
 
